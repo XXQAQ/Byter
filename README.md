@@ -100,9 +100,12 @@
         short head;
         @Order(order = 2)
         byte cmd;
-        @Length(length = 3)
-        @Order(order = 11)
+        
+        //数组字段
+        @Length(length = 5)
+        @Order(order = 10)
         KeyValue[] keyValues;
+        
         @Order(order = 100)
         byte sum;
     }
@@ -122,11 +125,16 @@
         short head;
         @Order(order = 2)
         byte cmd;
+        
+        //假设下面的keyValues长度由本字段决定
         @Order(order = 10)
         byte count;
+        
+        //数组字段
         @Length(lengthByField = "count")
         @Order(order = 11)
         KeyValue[] keyValues;
+        
         @Order(order = 100)
         byte sum;
     }
@@ -139,7 +147,7 @@
     }
 ```
 
-自动推导：（要求协议中不能存在两个及两个以上的数组，否则推导失败，同时协议中如果有补0填充的处理那么也将无效）
+自动推导：（要求协议中不能存在两个及两个以上的数组，否则推导失败，同时协议中如果有补0填充的处理那么也将失去意义）
 ```
     class ExampleArray{
         @Order(order = 1)
