@@ -155,16 +155,9 @@
         @Order(order = 2)
         byte cmd;
         @Order(order = 11)
-        KeyValue[] keyValues;
+        byte[] bytes;
         @Order(order = 100)
         byte sum;
-    }
-
-    class KeyValue {
-        @Order(order = 1)
-        byte key;
-        @Order(order = 2)
-        short value;
     }
 ```
 
