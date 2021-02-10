@@ -85,16 +85,15 @@
 其次第二个问题，对于数组类型的数据来说Byter也有一套解决方案：通过在数组字段上标注@Length的方式来描述数组的长度。
 @Length有两个方法，分别是 length 和 lengthByField。如果你的数组长度固定，那么使用 length = n 的方式来定义，如果是依赖某个字段的值的话，那就使用lengthByField = “fieldName”来定义。如果数组既不定长，也不依赖某个字段，那么就不需要用这个注解。Byter会计算后面的字段长度，再根据总长，从而推导出当前的数组长度。当然，这样就必须要求你的协议中不能同时存在两个以上的数组，否则无法推导。
 还有一点需要说明：数组既可以是基础数据类型，也可以是对象。
-长度依赖某个字段：
+
+定长：
 ```
     class ExampleArray{
         @Order(order = 1)
         short head;
         @Order(order = 2)
         byte cmd;
-        @Order(order = 10)
-        byte count;
-        @Length(lengthByField = "count")
+        @Length(length = 3)
         @Order(order = 11)
         KeyValue[] keyValues;
         @Order(order = 100)
@@ -108,14 +107,17 @@
         short value;
     }
 ```
-定长：
+
+长度依赖某个字段：
 ```
     class ExampleArray{
         @Order(order = 1)
         short head;
         @Order(order = 2)
         byte cmd;
-        @Length(length = 3)
+        @Order(order = 10)
+        byte count;
+        @Length(lengthByField = "count")
         @Order(order = 11)
         KeyValue[] keyValues;
         @Order(order = 100)
