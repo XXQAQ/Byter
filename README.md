@@ -85,21 +85,21 @@
 还有一点需要说明：数组既可以是基础数据类型，也可以是对象。
 长度依赖某个字段：
 ```
-    class StateArray{
+    class ExampleArray{
         @Order(order = 1)
         short head;
         @Order(order = 2)
         byte cmd;
         @Order(order = 10)
-        byte stateCount;
-        @Length(lengthByField = "stateCount")
+        byte count;
+        @Length(lengthByField = "count")
         @Order(order = 11)
-        State[] states;
+        KeyValue[] keyValues;
         @Order(order = 100)
         byte sum;
     }
 
-    class State {
+    class KeyValue {
         @Order(order = 1)
         byte key;
         @Order(order = 2)
@@ -108,19 +108,19 @@
 ```
 定长：
 ```
-    class StateArray{
+    class ExampleArray{
         @Order(order = 1)
         short head;
         @Order(order = 2)
         byte cmd;
         @Length(length = 3)
         @Order(order = 11)
-        State[] states;
+        KeyValue[] keyValues;
         @Order(order = 100)
         byte sum;
     }
 
-    class State {
+    class KeyValue {
         @Order(order = 1)
         byte key;
         @Order(order = 2)
