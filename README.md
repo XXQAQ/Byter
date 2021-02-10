@@ -47,10 +47,86 @@
 对于以上情况，都是框架者需要考虑的问题，Byter不一定能保证全部满足需求，不过对于正常流程的需求Byter全部都考虑到了。对于一些不太常见但是确实存在的协议，也可以与我私聊，Byter会通过迭代尽力满足大家。同时Byter的源码也是非常精简的，一共2个类+2个注解，可以随时拷贝走自己改改源码。
 
 首先对于第一个问题：对象里面可能会嵌套N层对象——这个完全不需要担心，Byter使用递归的方式处理了任意层级的对象数据，并且支持多层继承的关系，你只需要担心自己的对象是否按照协议定义。
+```
+    class Parent {
+        @Order(order = 1)
+        short head;
+        @Order(order = 2)
+        byte cmd;
+        @Order(order = 100)
+        byte sum;
+    }
 
+    class Child extends Parent{
+        @Order(order = 10)
+        Data1 data1;
+        @Order(order = 11)
+        Data2 data2;
+    }
+
+    class Data1{
+        @Order(order = 1)
+        int x;
+        @Order(order = 2)
+        long y;
+        @Order(order = 3)
+        short z;
+    }
+
+    class Data2{
+        @Order(order = 1)
+        double a;
+        @Order(order = 2)
+        float b;
+    }
+```
 其次第二个问题，对于数组类型的数据来说Byter也有一套解决方案：通过在数组字段上标注@Length的方式来描述数组的长度。
 @Length有两个方法，分别是 length 和 lengthByField。如果你的数组长度固定，那么使用 length = n 的方式来定义，如果是依赖某个字段的值的话，那就使用lengthByField = “fieldName”来定义。如果数组既不定长，也不依赖某个字段，那么就不需要用这个注解。Byter会计算后面的字段长度，再根据总长，从而推导出当前的数组长度。当然，这样就必须要求你的协议中不能同时存在两个以上的数组，否则无法推导。
 还有一点需要说明：数组既可以是基础数据类型，也可以是对象。
+长度依赖某个字段：
+```
+    class StateArray{
+        @Order(order = 1)
+        short head;
+        @Order(order = 2)
+        byte cmd;
+        @Order(order = 10)
+        byte stateCount;
+        @Length(lengthByField = "stateCount")
+        @Order(order = 11)
+        State[] states;
+        @Order(order = 100)
+        byte sum;
+    }
+
+    class State {
+        @Order(order = 1)
+        byte key;
+        @Order(order = 2)
+        short value;
+    }
+```
+定长：
+```
+    class StateArray{
+        @Order(order = 1)
+        short head;
+        @Order(order = 2)
+        byte cmd;
+        @Length(length = 3)
+        @Order(order = 11)
+        State[] states;
+        @Order(order = 100)
+        byte sum;
+    }
+
+    class State {
+        @Order(order = 1)
+        byte key;
+        @Order(order = 2)
+        short value;
+    }
+```
 
 如果在转换的过程中，需要用到一些额外加工途径才能生成最终的数据，或者在转换的过程中需要判断一些值的条件以决定后续；Byter也提供了相应的接口： ToBytesConverter 与 FromBytesConverter。
 你可以通过重写 interceptToBytes 或者 interceptFromBytes 并通过返回true的形式自定义某些字段的转换结果。如果返回false则表示不对此字段进行拦截，一般情况下你只需要拦截需要特殊处理的字段即可。
