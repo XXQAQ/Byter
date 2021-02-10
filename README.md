@@ -4,11 +4,13 @@
 使用jitpack依赖：https://jitpack.io/#XXQAQ/Byter/1.0.0
 
 众所周知，Json数据的序列化内容就是字符串，如果说Gson/FastJson是基于字符串的Json转化框架，那么Byter就是基于字节流的Json转化框架。
+
 设计Byter之处，就是为了快速且优雅地解析一些底层协议，如蓝牙、TCP/IP、MQTT等，均需要通过解析字节流来转换数据。在正常的开发流程中，往往都是采用写死下标的方法来处理字节数据，这种处理一般情况下还好，如若一旦涉及到协议增删改，那就非常头疼了。要是再多改上几次，最好再改改数据结构，恐怕就会怀疑自己是否适合从事开发行业了。
 
 为了让字节数据解析像Gson/FastJson那样简单粗暴，因此我设计了Byter。而Byter的使用相当简便，只需要掌握三步骤即可：
 
 第一步：按照协议定义你的对象属性字段；
+
 需要注意的是，字段的数据类型必须与你的协议一一对应。如：协议定义了一个 2字节大小的head，那么在对象中定义的head也应该是一个short而不能定义为int。因为java标准中int占4个字节，长度不相同当然不能混定义，不太清楚各个基础数据类型占用的字节大小的话可以自行搜索一下。
 ```
     class InfoData{
@@ -21,7 +23,9 @@
 ```
 
 第二步：标注字段顺序
+
 按照协议的字段顺序，在你的属性字段上使用@Order的注解描述你的协议顺序。
+
 需要注意的是，字段的标注顺序并不一定要求1、2、3、4、5这样依次递增，只要满足大小规律即可，如1，10，20，21，22，25，100。这样可以预留一些余地让子类来定义。
 ```
     class InfoData{
@@ -39,6 +43,7 @@
 ```
 
 第三步：
+
 使用Byter的 toBytes 或者 fromBytes ，体验数据与对象的一键转化。
 ```
     InfoData infoData = Byter.fromBytes(InfoData.class,bytes);
@@ -82,7 +87,9 @@
         float b;
     }
 ```
+
 其次第二个问题，对于数组类型的数据来说Byter也有一套解决方案：通过在数组字段上标注@Length的方式来描述数组的长度。
+
 @Length有两个方法，分别是 length 和 lengthByField。如果你的数组长度固定，那么使用 length = n 的方式来定义，如果是依赖某个字段的值的话，那就使用lengthByField = “fieldName”来定义。如果数组既不定长，也不依赖某个字段，那么就不需要用这个注解。Byter会计算后面的字段长度，再根据总长，从而推导出当前的数组长度。当然，这样就必须要求你的协议中不能同时存在两个以上的数组，否则无法推导。
 还有一点需要说明：数组既可以是基础数据类型，也可以是对象。
 
@@ -108,7 +115,7 @@
     }
 ```
 
-长度依赖某个字段：
+依赖某个字段：
 ```
     class ExampleArray{
         @Order(order = 1)
@@ -118,6 +125,27 @@
         @Order(order = 10)
         byte count;
         @Length(lengthByField = "count")
+        @Order(order = 11)
+        KeyValue[] keyValues;
+        @Order(order = 100)
+        byte sum;
+    }
+
+    class KeyValue {
+        @Order(order = 1)
+        byte key;
+        @Order(order = 2)
+        short value;
+    }
+```
+
+自动推导：（要求协议中不能存在两个及两个以上的数组，否则推导失败，同时协议中如果有补0填充的处理那么也将无效）
+```
+    class ExampleArray{
+        @Order(order = 1)
+        short head;
+        @Order(order = 2)
+        byte cmd;
         @Order(order = 11)
         KeyValue[] keyValues;
         @Order(order = 100)
