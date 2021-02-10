@@ -7,14 +7,40 @@
 为了让字节数据解析像Gson/FastJson那样简单粗暴，因此我设计了Byter。而Byter的使用相当简便，只需要掌握三步骤即可：
 
 第一步：按照协议定义你的对象属性字段；
-需要注意的是，字段的数据类型必须与你的协议一一对应。如：协议定义了一个 2字节大小的head，那么在对象中定义的head也应该是一个short而不能定义为int。因为java标准中int占4个字节，长度不相同当然不能混定义。不太清楚各个基础数据类型占用的字节大小的话可以参照这个表：
+需要注意的是，字段的数据类型必须与你的协议一一对应。如：协议定义了一个 2字节大小的head，那么在对象中定义的head也应该是一个short而不能定义为int。因为java标准中int占4个字节，长度不相同当然不能混定义，不太清楚各个基础数据类型占用的字节大小的话可以自行搜索一下。
+```
+    class InfoData{
+        short head;
+        byte cmd;
+        short version;
+        short extra;
+        byte sum;
+    }
+```
 
 第二步：标注字段顺序
 按照协议的字段顺序，在你的属性字段上使用@Order的注解描述你的协议顺序。
 需要注意的是，字段的标注顺序并不一定要求1、2、3、4、5这样依次递增，只要满足大小规律即可，如1，10，20，21，22，25，100。这样可以预留一些余地让子类来定义。
+```
+    class InfoData{
+        @Order(order = 1)
+        short head;
+        @Order(order = 2)
+        byte cmd;
+        @Order(order = 10)
+        short version;
+        @Order(order = 11)
+        short extra;
+        @Order(order = 20)
+        byte sum;
+    }
+```
 
 第三步：
 使用Byter的 toBytes 或者 fromBytes ，体验数据与对象的一键转化。
+```
+    InfoData infoData = Byter.fromBytes(InfoData.class,bytes);
+```
 
 有些朋友可能会问了：完了，就这？？当然，基础的使用方式仅此而已，但真实的情况肯定不会这么简单。在我们的实际应用中，一个对象里可能还会嵌套N级对象；并且有些数据还是数组，而对于字节协议来说数组的学问就多了，有些协议的数组定长，有些协议的数组需要根据某个字段的值来决定，还有一些协议既不定长也不需要定义，这么多需求都能满足？
 
